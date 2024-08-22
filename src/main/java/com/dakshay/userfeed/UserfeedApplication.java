@@ -1,6 +1,7 @@
 package com.dakshay.userfeed;
 
 import com.dakshay.userfeed.exceptions.UserFeedErrorSource;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.MessageSource;
@@ -17,6 +18,10 @@ public class UserfeedApplication {
 	@Bean
 	public MessageSource messageSource() {
 		return new UserFeedErrorSource();
+	}
+	@Bean
+	public ObjectMapper objectMapper() {
+		return new ObjectMapper();
 	}
 
 }

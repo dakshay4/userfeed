@@ -3,37 +3,36 @@ package com.dakshay.userfeed.models;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "posts" )
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Post {
+public class Post extends BaseBean{
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+
     private String statement;
-    @ManyToOne
+    @ManyToOne()
     @JoinColumn(name = "user_id")
     private User user;
-    @OneToOne(cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "affection_id", unique = true)
-    private Affection affection;
+    private Long createdAt;
+    private Long modifiedAt;
 
-    public Post(String statement, User user, Affection affection) {
+
+    public Post(String statement, User user) {
         this.statement = statement;
         this.user = user;
-        this.affection = affection;
     }
 
     @PrePersist
     public void prePersist() {
-        if (this.affection != null && this.affection.getId() == null) {
-            this.affection.setLikes(0);
-            this.affection.setDislikes(0);
+        if (this.getId() == null) {
+            this.createdAt = System.currentTimeMillis();
         }
+        this.modifiedAt = System.currentTimeMillis();
     }
 }

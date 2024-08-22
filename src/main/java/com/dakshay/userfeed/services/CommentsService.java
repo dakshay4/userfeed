@@ -1,11 +1,13 @@
 package com.dakshay.userfeed.services;
 
+import com.dakshay.userfeed.dto.CommentResponseDTO;
 import com.dakshay.userfeed.dto.CreateCommentDTO;
+import com.dakshay.userfeed.enums.AffectionContextType;
 import com.dakshay.userfeed.exceptions.CustomException;
 import com.dakshay.userfeed.exceptions.UserFeedErrors;
-import com.dakshay.userfeed.models.Affection;
 import com.dakshay.userfeed.models.Comment;
 import com.dakshay.userfeed.repo.CommentRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,16 +23,17 @@ public class CommentsService {
 
 
     private final CommentRepository commentRepository;
+    private final AffectionService affectionService;
     private final PostService postService;
     private final UserService userService;
+    private final ObjectMapper objectMapper;
 
     public Comment create(CreateCommentDTO createCommentDTO) {
         Comment comment =  new Comment(
                 createCommentDTO.getStatement(),
                 userService.findById(createCommentDTO.getUserId()),
                 postService.findById(createCommentDTO.getPostId()),
-                createCommentDTO.getParentCommentId()!=null ? findById(createCommentDTO.getParentCommentId()) : null,
-                new Affection(0,0)
+                createCommentDTO.getParentCommentId()!=null ? findById(createCommentDTO.getParentCommentId()) : null
                 );
         return commentRepository.save(comment);
     }
@@ -42,16 +45,24 @@ public class CommentsService {
         return commentOptional.get();
     }
 
-    public Stream<Comment> list(Long postId, int page, int size) {
+    public Stream<CommentResponseDTO> list(Long postId, int page, int size) {
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         Pageable pageable = PageRequest.of(page, size, sort);
-        return commentRepository.findAllByPostIdAndParentCommentIdIsNull(postId, pageable).get();
+        Stream<Comment> comments = commentRepository.findAllByPostIdAndParentCommentIdIsNull(postId, pageable).get();
+        return comments.map(this::convertToResponse);
     }
 
-    public Stream<Comment> replies(Long commentId, int page, int size) {
+    private CommentResponseDTO convertToResponse(Comment comment) {
+        CommentResponseDTO response = objectMapper.convertValue(comment, CommentResponseDTO.class);
+        response.setAffectionCount(affectionService.findAffectionsOfAContext(comment.getId(), AffectionContextType.COMMENT));
+        return response;
+    }
+
+    public Stream<CommentResponseDTO> replies(Long commentId, int page, int size) {
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         Pageable pageable = PageRequest.of(page, size, sort);
-        return commentRepository.findAllByParentCommentId(commentId, pageable).get();
+        Stream<Comment> comments = commentRepository.findAllByParentCommentId(commentId, pageable).get();
+        return comments.map(this::convertToResponse);
 
     }
 }

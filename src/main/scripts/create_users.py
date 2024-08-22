@@ -1,5 +1,4 @@
 import requests
-import json
 
 # List of names with IDs
 users = [

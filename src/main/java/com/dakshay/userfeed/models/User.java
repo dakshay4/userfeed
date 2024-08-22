@@ -1,5 +1,7 @@
 package com.dakshay.userfeed.models;
 
+import com.dakshay.userfeed.services.RedisService;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,6 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class User {
 
     @Id
@@ -19,5 +22,10 @@ public class User {
 
     public User(String name) {
         this.name = name;
+    }
+
+    @PostPersist
+    public void postPersist() {
+        RedisService.saveUserToRedis(this);
     }
 }

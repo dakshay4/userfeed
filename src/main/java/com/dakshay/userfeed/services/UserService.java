@@ -1,14 +1,15 @@
 package com.dakshay.userfeed.services;
 
 import com.dakshay.userfeed.dto.CreateUserDTO;
-import com.dakshay.userfeed.exceptions.CustomException;
-import com.dakshay.userfeed.exceptions.UserFeedErrors;
 import com.dakshay.userfeed.models.User;
 import com.dakshay.userfeed.repo.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -23,8 +24,19 @@ public class UserService {
     }
 
     public User findById(Long userId) {
-        Optional<User> userOptional = userRepo.findById(userId);
-        if(userOptional.isEmpty()) throw new CustomException(UserFeedErrors.USER_NOT_FOUND);
-        return userOptional.get();
+        User user = RedisService.getUser(userId);
+        if(user ==null) {
+            Optional<User> o = userRepo.findById(userId);
+            if(o.isPresent()) user = o.get();
+        }
+        RedisService.saveUserToRedis(user);
+        return user;
+    }
+
+    public Stream<User> list(Integer page, Integer size) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        if(page==null || size ==null)
+            return userRepo.findAll(sort).stream();
+        return userRepo.findAll(PageRequest.of(page, size, sort)).get();
     }
 }

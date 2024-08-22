@@ -6,10 +6,9 @@ import com.dakshay.userfeed.models.User;
 import com.dakshay.userfeed.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.stream.Stream;
 
 @RequestMapping("/users")
 @RestController
@@ -21,5 +20,10 @@ public class UserController {
     @PostMapping("/")
     public ResponseEntity<User> create(@RequestBody CreateUserDTO createUserDTO) {
         return ResponseEntity.ok(userService.createUser(createUserDTO));
+    }
+
+    @GetMapping("")
+    public ResponseEntity<Stream<User>> list(@RequestParam(required = false) Integer page, @RequestParam(required = false) Integer size ) {
+        return ResponseEntity.ok(userService.list(page,size));
     }
 }

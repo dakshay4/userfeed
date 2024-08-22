@@ -1,6 +1,7 @@
 package com.dakshay.userfeed.controller;
 
 
+import com.dakshay.userfeed.dto.CommentResponseDTO;
 import com.dakshay.userfeed.dto.CreateCommentDTO;
 import com.dakshay.userfeed.models.Comment;
 import com.dakshay.userfeed.services.CommentsService;
@@ -22,15 +23,14 @@ public class CommentsController {
         return ResponseEntity.ok(commentsService.create(createCommentDTO));
     }
 
-
     @GetMapping("/{postId}")
-    public ResponseEntity<Stream<Comment>> list(@PathVariable Long postId, @RequestParam(required = false) int page, @RequestParam int size ) {
+    public ResponseEntity<Stream<CommentResponseDTO>> list(@PathVariable Long postId, @RequestParam(required = false) int page, @RequestParam int size ) {
         return ResponseEntity.ok(commentsService.list(postId, page,size));
     }
 
 
     @GetMapping("/replies/{commentId}")
-    public ResponseEntity<Stream<Comment>> replies(@PathVariable Long commentId, @RequestParam(required = false) int page, @RequestParam int size ) {
+    public ResponseEntity<Stream<CommentResponseDTO>> replies(@PathVariable Long commentId, @RequestParam(required = false) int page, @RequestParam int size ) {
         return ResponseEntity.ok(commentsService.replies(commentId, page,size));
     }
 }
